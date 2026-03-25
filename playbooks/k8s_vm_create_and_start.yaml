@@ -1,0 +1,64 @@
+---
+- name: Create and start cluster VMs
+  hosts: all
+  vars:
+    # PLEASE DEFINE ALL VARs
+    cluster_prefix: "bober" # ENTER PREFIX FOR CLUSTER. ex k8s-node-1
+    min_vms: 22 #NUMBER OF MIN CLUSTER NODE NUMBER ex. k8s-node-22 if first node. NEED TO BE LOWER THEN MAX VMS
+    max_vms: 4 #NUMBER CLUSTER VMs. if max_vms=3 ex k8s-node-1, k8s-node-2, k8s-node-3. NEED TO BE HIGHER THEN MAX VMS
+    path_to_iso: "/var/lib/libvirt/iso/ubuntu-server.iso" #PATH TO ISO FOR INSTALL SYSTEM
+    bridge_name: "br0" #NAME OF BRIDGE INTERFACE ON HOST
+  tasks:
+    - name: Check VARs define
+      ansible.builtin.assert:
+        that:
+          - max_vms is defined
+          - (max_vms | int) > 0
+          - path_to_iso is defined
+          - path_to_iso | string | length > 0
+          - bridge_name is defined
+          - bridge_name | string | length > 0
+          - cluster_prefix is defined
+          - cluster_prefix | string | length > 0
+        fail_msg: "ALL VARS NOT DEFINE! PLEASE CHECK PLAYBOOK!"
+        success_msg: "All VARs are present. OK!"
+
+    - name: Check bridge interface on hosts
+      ansible.builtin.assert:
+        that:
+          - "bridge_name in ansible_interfaces"
+        fail_msg: "Bridge interface {{ bridge_name }} not fount on {{ ansible_hostname }}"
+        success_msg: "Bridge interface found. OK!"
+        
+
+    - name: Install python3-libvirt on hosts
+      ansible.builtin.apt:
+        name: python3-libvirt
+        state: present
+      become: true
+
+    - name: Get VMs list
+      community.libvirt.virt:
+        command: list_vms
+      register: list_vms_result
+
+    - name: Create k8s VMs
+      community.libvirt.virt_install:
+        name: "{{ cluster_prefix }}-node-{{ item }}"
+        memory: 4096
+        vcpus: 4
+        disks:
+          - pool: default
+            size: 20
+            format: qcow2
+        osinfo: 
+          detect: true
+          require: false
+        cdrom: "{{ path_to_iso }}"
+        networks:
+          - bridge: "{{ bridge_name }}"
+        graphics:
+          type: vnc
+        autostart: true
+      loop: "{{ range(1, (max_vms | int) + 1) | list }}"
+      when: "cluster_prefix ~ '-node-' ~ item not in list_vms_result.list_vms"
