@@ -1,25 +1,42 @@
 ---
-- name: Setup sshd_config on hosts for safety
+- name: Setup SSH on hosts
   hosts: all
-  connection: local
   tasks:
     - name: Get host keys to from inventory
-      connection: local
-      shell: "ssh-keyscan -t rsa {{ inventory_host }}"
+      delegate_to: localhost
+      shell: "ssh-keyscan -t rsa {{ ansible_host }}"
       register: host_keys
     
     - name: Add host keys to known_hosts
-      connection: local
+      delegate_to: localhost
       known_hosts: 
-        name: "{{ inventory_host }}"
+        name: "{{ ansible_host }}"
         key: "{{ host_keys.stdout }}"
         state: present
 
+    - name: Search public keys on localhost
+      delegate_to: localhost
+      ansible.builtin.find:
+        paths: "{{ lookup('env', 'HOME') }}/.ssh/"
+        patterns: "id_*.pub"
+      register: keys_paths
+
+    # - name: test output
+    #   ansible.builtin.debug:
+    #     msg: " {{ keys_paths.files | map(attribute='path') }} "
+      
+    - name: Check for key exists
+      ansible.builtin.assert:
+        that: keys_paths.matched > 0
+        fail_msg: "Error! Can't find public keys in users .ssh folder!"
+        success_msg: "Public keys found. OK!"
+        
     - name: Distribute ansible user ssh key to hosts
-      hosts: all5
       ansible.posix.authorized_key:
         state: present
-        comment: "Automate SSH keys distribution"
+        comment: "{{ ansible_user_id }}_user_automate_ssh_key_distribution_"
         exclusive: false
         user: "{{ lookup('env', 'USER') }}"
-        key:  "{{ lookup(file, lookup(env, 'HOME') + '/.ssh/id_*.pub') }}"
+        key: "{{ lookup('file', item) }}"
+      loop: "{{ keys_paths.files | map(attribute='path') }}"
+    
