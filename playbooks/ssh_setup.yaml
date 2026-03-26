@@ -1,0 +1,25 @@
+---
+- name: Setup sshd_config on hosts for safety
+  hosts: all
+  connection: local
+  tasks:
+    - name: Get host keys to from inventory
+      connection: local
+      shell: "ssh-keyscan -t rsa {{ inventory_host }}"
+      register: host_keys
+    
+    - name: Add host keys to known_hosts
+      connection: local
+      known_hosts: 
+        name: "{{ inventory_host }}"
+        key: "{{ host_keys.stdout }}"
+        state: present
+
+    - name: Distribute ansible user ssh key to hosts
+      hosts: all5
+      ansible.posix.authorized_key:
+        state: present
+        comment: "Automate SSH keys distribution"
+        exclusive: false
+        user: "{{ lookup('env', 'USER') }}"
+        key:  "{{ lookup(file, lookup(env, 'HOME') + '/.ssh/id_*.pub') }}"
