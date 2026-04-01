@@ -3,7 +3,7 @@
   hosts: all
   vars:
     # PLEASE DEFINE ALL VARs
-    cluster_prefix: "k8s" # ENTER PREFIX FOR CLUSTER. ex k8s-node-1
+    cluster_prefix: "user" # ENTER PREFIX FOR CLUSTER. ex k8s-node-1
     min_vms_number: 1 #NUMBER OF MIN CLUSTER NODE NUMBER ex. k8s-node-22 if first node. NEED TO BE LOWER THEN MAX VMS
     max_vms_number: 3 #NUMBER CLUSTER VMs. if max_vms_number=3 ex k8s-node-1, k8s-node-2, k8s-node-3. NEED TO BE HIGHER THEN MAX VMS
     path_to_iso: "/var/lib/libvirt/iso/ubuntu-server.iso" #PATH TO ISO FOR INSTALL SYSTEM
@@ -28,7 +28,6 @@
         fail_msg: "Bridge interface {{ bridge_name }} not fount on {{ ansible_hostname }}"
         success_msg: "Bridge interface found. OK!"
         
-
     - name: Install python3-libvirt on hosts
       ansible.builtin.apt:
         name: python3-libvirt
@@ -40,7 +39,7 @@
         command: list_vms
       register: list_vms_result
 
-    - name: Create k8s VMs
+    - name: Create VMs
       community.libvirt.virt_install:
         name: "{{ cluster_prefix }}-node-{{ item }}"
         memory: 4096

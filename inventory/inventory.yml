@@ -1,0 +1,17 @@
+---
+pc:
+  hosts:
+    pc.kiselevtech.ru:
+      ansible_host: 192.168.88.210
+k8s:
+  hosts:
+    k8s-node-1:
+      ansible_host: 192.168.88.87
+    k8s-node-2:
+      ansible_host: 192.168.88.88
+    k8s-node-3:
+      ansible_host: 192.168.88.89
+all:
+  children:
+    pc:
+    k8s:
