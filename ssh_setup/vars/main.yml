@@ -1,0 +1,5 @@
+#SPDX-License-Identifier: MIT-0
+---
+# vars file for ssh_setup
+sshd_config: "/etc/ssh/sshd_config"
+ansible_ssh_extra_args: "-o StrictHostKeyChecking=accept-new"

@@ -1,0 +1,8 @@
+#SPDX-License-Identifier: MIT-0
+---
+# handlers file for ssh_setup
+- name: restart_sshd_daemon
+  become: true
+    ansible.builtin.systemd_service:
+      name: ssh
+      state: restarted
