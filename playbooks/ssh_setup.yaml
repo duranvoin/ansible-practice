@@ -1,19 +1,21 @@
 ---
-
-- name: Setup SSH on host
+- name: Setup SSH on hosts
   hosts: all
+  vars:
+    sshd_config: "/etc/ssh/sshd_config"
+    ansible_ssh_extra_args: "-o StrictHostKeyChecking=accept-new"
   gather_facts: false
-
-  pre_tasks:
+  tasks:
+    # COPY SSH PUBLIC KEYS BLOCK
     - name: Get host keys to from inventory
       delegate_to: localhost
       shell: "ssh-keyscan -t rsa {{ ansible_host }}"
       register: host_keys
       ignore_unreachable: true
-
+    
     - name: Add host keys to known_hosts
       delegate_to: localhost
-      known_hosts:
+      known_hosts: 
         name: "{{ ansible_host }}"
         key: "{{ host_keys.stdout }}"
         state: present
@@ -25,7 +27,7 @@
         paths: "{{ lookup('env', 'HOME') }}/.ssh/"
         patterns: "id_*.pub"
       register: keys_paths
-
+      
     - name: Check for key exists
       ansible.builtin.assert:
         that: keys_paths.matched > 0
@@ -34,8 +36,7 @@
 
     - name: Gather facts from host
       ansible.builtin.setup:
-
-  tasks:
+        
     - name: Distribute ansible user ssh key to hosts
       ansible.posix.authorized_key:
         state: present
@@ -45,6 +46,7 @@
         key: "{{ lookup('file', item) }}"
       loop: "{{ keys_paths.files | map(attribute='path') }}"
 
+    #SETUP SSH CONFIG BLOCK
     - name: Find custom sshd_config file
       ansible.builtin.find:
         paths: "{{ sshd_config }}.d/"
@@ -64,11 +66,17 @@
         path: "{{ sshd_config }}"
         regexp: "^.*PermitRootLogin.*$"
         replace: "PermitRootLogin no"
-
+    
     - name: Disable password entry function
       become: true
       ansible.builtin.replace:
         path: "{{ sshd_config }}"
         regexp: "^.*PasswordAuthentication.*$"
         replace: "PasswordAuthentication no"
-      notify: restart_sshd_daemon
+
+    #RESTART SSH DAEMON
+    - name: Restart ssh daemon through systemd
+      become: true
+      ansible.builtin.systemd_service:
+        name: ssh
+        state: restarted
