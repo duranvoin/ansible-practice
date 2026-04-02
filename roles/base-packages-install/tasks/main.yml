@@ -1,0 +1,6 @@
+---
+# tasks file for base-packages-install
+
+- name: "Install base packages"
+  ansible.builtin.apt:
+

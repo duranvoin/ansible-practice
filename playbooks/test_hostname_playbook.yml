@@ -1,0 +1,9 @@
+---
+- name: Playbook for test with hostname
+  hosts: all
+
+  pre_tasks:
+  # check if host nfs- k8s- user- etc
+  - name: Check host-type
+    ansible.builtin.debug:
+      msg: "{{ ansible_fqdn }}"

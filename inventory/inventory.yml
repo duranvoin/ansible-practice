@@ -6,18 +6,19 @@ pc:
 k8s:
   hosts:
     k8s-node-1:
-      ansible_host: 192.168.88.87
+      ansible_host: 192.168.88.201
     k8s-node-2:
-      ansible_host: 192.168.88.88
+      ansible_host: 192.168.88.202
     k8s-node-3:
-      ansible_host: 192.168.88.89
+      ansible_host: 192.168.88.203
 nfs:
   hosts:
     nfs-node-1:
-      ansible_host: 192.168.88.200
+      ansible_host: 192.168.88.204
     nfs-node-2:
-      ansible_host: 192.168.88.199
+      ansible_host: 192.168.88.205
 all:
   children:
     pc:
     k8s:
+    nfs:
