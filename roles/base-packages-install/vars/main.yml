@@ -1,3 +1,14 @@
-#SPDX-License-Identifier: MIT-0
 ---
-# vars file for base-packages-install
+vars_type: "default"
+
+packages:
+  - nano
+  - iputils-arping
+  - iputils-clockdiff
+  - iputils-ping
+  - iputils-tracepath
+  - curl
+  - wget
+  - smartmontools
+  - htop
+  - nfs-common

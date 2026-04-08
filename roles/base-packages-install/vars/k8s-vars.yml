@@ -1,0 +1,5 @@
+---
+vars_type: "k8s"
+
+packages:
+  - nginx

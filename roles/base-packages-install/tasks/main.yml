@@ -1,6 +1,33 @@
 ---
-# tasks file for base-packages-install
-
-- name: "Install base packages"
+- name: Update package base
   ansible.builtin.apt:
+    update_cache: true
+  become: true
 
+- name: Upgrade all packages
+  ansible.builtin.apt:
+    name: "*"
+    state: latest
+  become: true
+
+- name: Install default packages
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ packages }}"
+  become: true
+
+- name: Install specific host type packages
+  block:
+    - name: Include host type VARs
+      ansible.builtin.include_vars:
+        file: "{{ prefix_type }}-vars.yml"
+      failed_when: false
+
+    - name: Install specific packages
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ packages }}"
+      become: true
+      when: vars_type != 'default'

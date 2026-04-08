@@ -5,6 +5,14 @@
     sshd_config: "/etc/ssh/sshd_config"
     ansible_ssh_extra_args: "-o StrictHostKeyChecking=accept-new"
   gather_facts: false
+
+  handlers:
+    - name: Restart ssh daemon through systemd
+      become: true
+      ansible.builtin.systemd_service:
+        name: ssh
+        state: restarted
+
   tasks:
     # COPY SSH PUBLIC KEYS BLOCK
     - name: Get host keys to from inventory
@@ -66,6 +74,7 @@
         path: "{{ sshd_config }}"
         regexp: "^.*PermitRootLogin.*$"
         replace: "PermitRootLogin no"
+      notify: 'Restart ssh daemon through systemd'
     
     - name: Disable password entry function
       become: true
@@ -73,10 +82,13 @@
         path: "{{ sshd_config }}"
         regexp: "^.*PasswordAuthentication.*$"
         replace: "PasswordAuthentication no"
+      notify: 'Restart ssh daemon through systemd'
 
-    #RESTART SSH DAEMON
-    - name: Restart ssh daemon through systemd
+    - name: Disable sudo password for current user
       become: true
-      ansible.builtin.systemd_service:
-        name: ssh
-        state: restarted
+      ansible.builtin.copy:
+        dest: "/etc/sudoers.d/{{ lookup('env', 'USER') }}"
+        content: "{{ lookup('env', 'USER') }}    ALL=(ALL:ALL) NOPASSWD:ALL"
+        owner: root
+        group: root
+        mode: '0440'

@@ -1,0 +1,24 @@
+---
+- name: Common playbook for setup new system
+  hosts: all
+
+  pre_tasks:
+    - name: Prepare setup check
+      ansible.builtin.pause:
+        prompt: "WARNING! Before this playbook, you need to start 'ssh_setup'! If OK - press Enter"
+
+    - name: Check host OS family
+      ansible.builtin.assert:
+        that:
+          - ansible_os_family == 'Debian' or ansible_os_family == 'Ubuntu'
+        fail_msg: "ERR! Pls use Debian/Ubuntu! Current - {{ ansible_os_family }}"
+        success_msg: "Current OS - {{ ansible_os_family }}. OK!"
+
+    - name: Detect machine type
+      ansible.builtin.set_fact:
+        prefix_type: "{{ ansible_fqdn | regex_replace('^([a-z0-9]+).*', '\\1') }}"
+
+  tasks:
+    - name: Install base packages
+      ansible.builtin.include_role:
+        name: "roles/base-packages-install"

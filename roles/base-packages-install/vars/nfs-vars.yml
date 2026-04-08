@@ -1,0 +1,6 @@
+---
+vars_type: "nfs"
+
+packages:
+  - apache2
+  - nfs-kernel-server

@@ -1,0 +1,25 @@
+---
+- name: Playbook for test with hostname
+  hosts: all
+
+  pre_tasks:
+
+  - name: Check host OS family
+    ansible.builtin.assert:
+      that:
+        - ansible_os_family == 'Debian' or ansible_os_family == 'Ubuntu'
+      fail_msg: "Error! Please use Debian or Ubuntu! Current OS - {{ ansible_os_family }}"
+      success_msg: "Current OS - {{ ansible_os_family }}. OK!"
+
+  # check if host nfs- k8s- user- etc
+  # - name: Check host-type
+  #   ansible.builtin.set_fact:
+  #     type_prefix: "{{ ansible_fqdn | regex_replace('^([a-z0-9]+).*', '\\1') }}"
+
+  # - name: Echo machine type
+  #   ansible.builtin.debug:
+  #     msg: "{{ type_prefix }}"
+
+  - name: test role Include
+    ansible.builtin.include_role:
+      name: roles/base-packages-install
