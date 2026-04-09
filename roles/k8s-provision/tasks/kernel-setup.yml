@@ -1,0 +1,15 @@
+---
+- name: Enabling net.ipv4.ip_forward
+  ansible.posix.sysctl:
+    name: "net.ipv4.ip_forward"
+    value: "1"
+    state: present
+    sysctl_set: true
+    reload: true
+    sysctl_file: "/etc/sysctl.d/{{ prefix_type }}.conf"
+
+- name: Add nf_conntrack kernel module 
+  community.general.modprobe:
+    name: "nf_conntrack"
+    state: present
+    persistent: present

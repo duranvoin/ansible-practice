@@ -12,3 +12,12 @@ packages:
   - smartmontools
   - htop
   - nfs-common
+  - make
+  - gcc
+  - linux-libc-dev
+  - libseccomp-de
+  - pkg-config
+  - git
+  - apt-transport-https
+  - ca-certificates
+  - gnupg

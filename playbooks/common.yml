@@ -1,6 +1,7 @@
 ---
 - name: Common playbook for setup new system
   hosts: all
+  become: true
 
   pre_tasks:
     - name: Prepare setup check
