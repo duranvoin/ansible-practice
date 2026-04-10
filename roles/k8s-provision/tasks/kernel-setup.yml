@@ -8,8 +8,9 @@
     reload: true
     sysctl_file: "/etc/sysctl.d/{{ prefix_type }}.conf"
 
-- name: Add nf_conntrack kernel module 
+- name: Add nf_conntrack and br_netfilter kernel modules
   community.general.modprobe:
-    name: "nf_conntrack"
+    name: "{{ item }}"
     state: present
     persistent: present
+  loop: "{{ kernel_modules }}" # present in group_vars

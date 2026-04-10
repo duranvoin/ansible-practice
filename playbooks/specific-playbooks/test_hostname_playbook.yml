@@ -4,6 +4,25 @@
   become: true
 
   pre_tasks:
+    - name: check k8s release vers
+      ansible.builtin.uri:
+        url: "https://dl.k8s.io/release/stable.txt"
+        return_content: true
+      register: get_stable
+
+    - name: output test vers
+      ansible.builtin.debug:
+        msg: "{{ get_stable.content }}"
+
+
+
+      #https://dl.k8s.io/release/stable.txt
+
+
+
+  #  - name: Check Swap
+  #    ansible.builtin.debug:
+  #     msg: "{{ ansible_memory_mb.swap.total }}"
 
   # - name: Check host OS family
   #   ansible.builtin.assert:
@@ -25,6 +44,6 @@
   #   ansible.builtin.include_role:
   #     name: roles/base-packages-install
 
-  - name: test role Include
-    ansible.builtin.include_role:
-      name: roles/k8s-provision
+  # - name: test role Include
+  #   ansible.builtin.include_role:
+  #     name: roles/k8s-provision

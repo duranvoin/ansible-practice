@@ -1,0 +1,11 @@
+---
+- name: Download runc
+  ansible.builtin.get_url:
+    url: "https://github.com/opencontainers/runc/releases/download/v{{ runc_version }}/runc.{{ arch }}"
+    dest: "/usr/local/sbin/runc"
+
+- name: Change runc file permissions
+  ansible.builtin.file:
+    path: "/usr/local/sbin/runc"
+    state: file
+    mode: '0755'

@@ -1,0 +1,28 @@
+---
+- name: Download containerd bins
+  ansible.builtin.get_url:
+    url: "https://github.com/containerd/containerd/releases/download/v{{ containerd_version }}/containerd-{{ containerd_version }}-linux-{{ arch }}.tar.gz"
+    dest: "/tmp/containerd.tar.gz"
+
+- name: Unarchive containerd bins to /usr/local/bin
+  ansible.builtin.unarchive:
+    remote_src: true
+    src: "/tmp/containerd.tar.gz"
+    dest: "/usr/local/"
+
+- name: Download containerd systemd unit
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/containerd/containerd/main/containerd.service"
+    dest: "/etc/systemd/system/containerd.service"
+    mode: '0644'
+  notify: "Systemd daemon-reload after add containerd unit"
+
+- name: Create folder for containerd
+  ansible.builtin.file:
+    path: "/etc/containerd"
+    state: directory
+    mode: '0755'
+
+- name: Generate containerd config
+  ansible.builtin.command:
+    cmd: "containerd config default | sudo tee /etc/containerd/config.toml"

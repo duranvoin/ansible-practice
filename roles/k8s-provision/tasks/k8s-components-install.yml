@@ -1,0 +1,51 @@
+---
+- name: Install crictl
+  block:
+    - name: Download crictl
+      ansible.builtin.get_url:
+        url: "https://github.com/kubernetes-sigs/cri-tools/releases/download/v{{ crictl-version }}/crictl-v{{ crictl-version }}-linux-{{ arch }}.tar.gz"
+        dest: "/tmp/crictl.tar.gz"
+
+    - name: Unarchive crictl
+      ansible.builtin.unarchive:
+        remote_src: true
+        src: "/tmp/crictl.tar.gz"
+        dest: "{{ k8s-download-dir }}"
+
+- name: Install kubeadm and kubelet
+  block:
+    - name: Get release version number
+      ansible.builtin.uri:
+        url: "https://dl.k8s.io/release/stable.txt"
+        return_content: true
+      register: k8s_release_version
+
+    - name: Download bin's from repo
+      ansible.builtin.get_url:
+        url: "https://dl.k8s.io/release/{{ k8s_release_version }}/bin/linux/{{ arch }}/{{ item }}"
+        dest: "{{ k8s-download-dir }}/{{ item }}"
+      loop: "{{ k8s-components }}"
+
+    - name: Modificate k8s bin's rights
+      ansible.builtin.file:
+        path: "{{ k8s-download-dir }}/{{ item }}"
+        state: file
+        mode: '0755'
+      loop: "{{ k8s-components }}"
+
+- name: Install kubelet.service
+  ansible.builtin.get_url:
+        url: ""
+        dest: ""
+
+
+
+
+
+
+# 6) # или установка всех компонентов в сумме
+
+#install crictl https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.35.0/crictl-v1.35.0-linux-amd64.tar.gz
+
+
+# https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl

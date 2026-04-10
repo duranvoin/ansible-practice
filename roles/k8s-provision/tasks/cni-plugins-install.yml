@@ -1,0 +1,17 @@
+---
+- name: Create folder for cni bin's
+  ansible.builtin.file:
+    path: "/opt/cni/bin"
+    state: directory
+    mode: '0755'
+
+- name: Download cni
+  ansible.builtin.get_url:
+    url: "https://github.com/containernetworking/plugins/releases/download/v{{ cni-plugin-version }}/cni-plugins-linux-{{ arch }}-v{{ cni-plugin-version }}.tgz"
+    dest: "/tmp/cni-plugins.tgz"
+  
+- name: Unarchive cni-plugin bin's
+  ansible.builtin.unarchive:
+    remote_src: yes
+    src: "/tmp/cni-plugins.tgz"
+    dest: "/opt/cni/bin/"

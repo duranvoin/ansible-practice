@@ -2,3 +2,13 @@
 arch: 'amd64'
 containerd_version: '2.2.2'
 runc_version: '1.4.2'
+cni-plugin-version: '1.9.1'
+crictl-version: '1.35.0'
+k8s-release-vers: '0.21.0'
+k8s-download-dir: "/usr/local/bin"
+kernel_modules:
+  - nf_conntrack
+  - br_netfilter
+k8s-components:
+  - kubelet
+  - kubeadm
