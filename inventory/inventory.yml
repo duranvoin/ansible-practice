@@ -14,9 +14,10 @@ k8s:
 nfs:
   hosts:
     nfs-node-1:
-      ansible_host: 10.10.20.251
+      ansible_host: 
     nfs-node-2:
-      ansible_host: 10.10.20.250
+      ansible_host: 
+    
 all:
   children:
     pc:

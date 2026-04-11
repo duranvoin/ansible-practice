@@ -3,14 +3,14 @@
   block:
     - name: Download crictl
       ansible.builtin.get_url:
-        url: "https://github.com/kubernetes-sigs/cri-tools/releases/download/v{{ crictl-version }}/crictl-v{{ crictl-version }}-linux-{{ arch }}.tar.gz"
+        url: "https://github.com/kubernetes-sigs/cri-tools/releases/download/v{{ crictl_version }}/crictl-v{{ crictl_version }}-linux-{{ arch }}.tar.gz"
         dest: "/tmp/crictl.tar.gz"
 
     - name: Unarchive crictl
       ansible.builtin.unarchive:
         remote_src: true
         src: "/tmp/crictl.tar.gz"
-        dest: "{{ k8s-download-dir }}"
+        dest: "{{ k8s_download_dir }}"
 
 - name: Install kubeadm and kubelet
   block:
@@ -22,30 +22,54 @@
 
     - name: Download bin's from repo
       ansible.builtin.get_url:
-        url: "https://dl.k8s.io/release/{{ k8s_release_version }}/bin/linux/{{ arch }}/{{ item }}"
-        dest: "{{ k8s-download-dir }}/{{ item }}"
-      loop: "{{ k8s-components }}"
+        url: "https://dl.k8s.io/release/{{ k8s_release_version.content }}/bin/linux/{{ arch }}/{{ item }}"
+        dest: "{{ k8s_download_dir }}{{ item }}"
+      loop: "{{ k8s_components }}"
 
     - name: Modificate k8s bin's rights
       ansible.builtin.file:
-        path: "{{ k8s-download-dir }}/{{ item }}"
+        path: "{{ k8s_download_dir }}{{ item }}"
         state: file
         mode: '0755'
-      loop: "{{ k8s-components }}"
+      loop: "{{ k8s_components }}"
 
-- name: Install kubelet.service
-  ansible.builtin.get_url:
-        url: ""
-        dest: ""
+- name: Install kubectl
+  block:
+    - name: Download kubectl
+      ansible.builtin.get_url:
+        url: "https://dl.k8s.io/release/{{ k8s_release_version.content }}/bin/linux/{{ arch }}/kubectl"
+        dest: "{{ k8s_download_dir }}kubectl"
 
+    - name: Modificate kubectl bin rights
+      ansible.builtin.file:
+        path: "{{ k8s_download_dir }}kubectl"
+        owner: root
+        group: root
+        state: file
+        mode: '0755'
 
+- name: Install kubelet.service and kubeadm.conf
+  block:
+    - name: Create directory for kubelet.service
+      ansible.builtin.file:
+        path: "/usr/lib/systemd/system/kubelet.service.d"
+        state: directory
+        mode: '0755'
+    
+    - name: Download kubelet.service and kubeadm.conf
+      ansible.builtin.get_url:
+        url: "{{ item.url }}"
+        dest: "{{ item.dest }}"
+      loop:
+        - { url: "https://raw.githubusercontent.com/kubernetes/release/v{{ k8s_release_vers }}/cmd/krel/templates/latest/kubelet/kubelet.service", dest: "/usr/lib/systemd/system/kubelet.service" }
+        - { url: "https://raw.githubusercontent.com/kubernetes/release/v{{ k8s_release_vers }}/cmd/krel/templates/latest/kubeadm/10-kubeadm.conf", dest: "/usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf" }
 
-
-
-
-# 6) # или установка всех компонентов в сумме
-
-#install crictl https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.35.0/crictl-v1.35.0-linux-amd64.tar.gz
-
-
-# https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl
+    - name: Replace path in kubelet.service and kubeadm.conf
+      ansible.builtin.replace:
+        path: "{{ item  }}"
+        regexp: "(?m)^(.*)/usr/bin/(.*)$"
+        replace: "\\1{{ k8s_download_dir }}\\2"
+      loop:
+        - "/usr/lib/systemd/system/kubelet.service"
+        - "/usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf"
+      notify: "Systemd daemon-reload after add kubelet unit"

@@ -12,9 +12,17 @@
   ansible.builtin.include_tasks:
     file: "containerd-install.yml"
 
+- name: Install runc
+  ansible.builtin.include_tasks:
+    file: "runc-install.yml"
+
 - name: Install cni-plugins
   ansible.builtin.include_tasks:
-    file: "cni-plugins.yml"
+    file: "cni-plugins-install.yml"
+
+- name: Install k8s components
+  ansible.builtin.include_tasks:
+    file: "k8s-components-install.yml"
 
 
 
@@ -29,10 +37,6 @@
 
 
 
-# # https://github.com/containerd/containerd/blob/main/docs/getting-started.md
-
-# 6) # или установка всех компонентов в сумме
-# https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl
 
 
 
@@ -96,3 +100,10 @@
 # собрать конфиг containerd 
 # containerd config default | sudo tee /etc/containerd/config.toml
 # включить SystemdGroup на тру
+
+
+# DONE
+# # https://github.com/containerd/containerd/blob/main/docs/getting-started.md
+
+# 6) # или установка всех компонентов в сумме
+# https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl

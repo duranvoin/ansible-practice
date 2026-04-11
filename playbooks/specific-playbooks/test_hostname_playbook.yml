@@ -1,18 +1,30 @@
 ---
 - name: Playbook for test with hostname
-  hosts: all
+  hosts: k8s-node-2
   become: true
 
-  pre_tasks:
-    - name: check k8s release vers
-      ansible.builtin.uri:
-        url: "https://dl.k8s.io/release/stable.txt"
-        return_content: true
-      register: get_stable
+  tasks:
 
-    - name: output test vers
-      ansible.builtin.debug:
-        msg: "{{ get_stable.content }}"
+    
+
+    # - name: test text replace
+    #   ansible.builtin.replace:
+    #     path: "{{ item  }}"
+    #     regexp: "(?m)^(.*)/usr/bin/(.*)$"
+    #     replace: "\\1\/bober\/test\/\\2"
+    #   loop:
+    #     - /home/mikiselev/test
+    #     - /home/mikiselev/test2
+  # pre_tasks:
+    # - name: check k8s release vers
+    #   ansible.builtin.uri:
+    #     url: "https://dl.k8s.io/release/stable.txt"
+    #     return_content: true
+    #   register: get_stable
+
+    # - name: output test vers
+    #   ansible.builtin.debug:
+    #     msg: "{{ get_stable.content }}"
 
 
 
