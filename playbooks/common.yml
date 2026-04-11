@@ -20,10 +20,11 @@
         prefix_type: "{{ ansible_fqdn | regex_replace('^([a-z0-9]+).*', '\\1') }}"
 
   tasks:
-    # - name: Install base packages
-    #   ansible.builtin.include_role:
-    #     name: "roles/base-packages-install"
+    - name: Install base packages
+      ansible.builtin.include_role:
+        name: "roles/base-packages-install"
 
-    - name: Test k8s k8s-provision
+    - name: Provision k8s node
       ansible.builtin.include_role:
         name: roles/k8s-provision
+      when: prefix_type == 'k8s'
